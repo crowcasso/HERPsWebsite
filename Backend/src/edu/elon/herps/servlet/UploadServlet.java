@@ -43,7 +43,6 @@ public class UploadServlet extends HttpServlet {
 		
 		try {
 			FileItemIterator iterator = upload.getItemIterator(req);
-			EntityManager em = EMF.get().createEntityManager();
 			UploadData toUpload = null;
 			
 			if (iterator.hasNext()) {
@@ -89,7 +88,7 @@ public class UploadServlet extends HttpServlet {
 					int slot = 0;
 					for (int i = 0; i < toUpload.size(); i++) {
 						NameValuePair nvp = toUpload.get(i);
-						entity.setProperty(nvp.name, slot++);
+						setEntityProperty(entity, nvp.name, slot++);
 					}
 					entity.setProperty("order", "true");
 					datastore.put(entity);
@@ -101,10 +100,10 @@ public class UploadServlet extends HttpServlet {
 				for (int i = 0; i < toUpload.size(); i++) {
 					NameValuePair nvp = toUpload.get(i);
 					if (nvp != null && nvp.value instanceof Picture) {
-						entity.setProperty(nvp.name, 
+						setEntityProperty(entity, nvp.name, 
 								pictureKeys.get(pictureIndex++));
 					} else {
-						entity.setProperty(nvp.name, nvp.value);
+						setEntityProperty(entity, nvp.name, nvp.value);
 					}
 				}
 				entity.setProperty("order", "false");
@@ -115,10 +114,19 @@ public class UploadServlet extends HttpServlet {
 				
 				resp.getWriter().println("true");
 			}
-			em.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private void setEntityProperty(Entity entity, String name, Object value) {
+		int index = 1;
+		String newName = name;
+		while (entity.getProperties().containsKey(newName)) {
+			index++;
+			newName = name + " (" + index + ")"; 
+		}
+		entity.setProperty(newName, value);
 	}
 	
 	@Override

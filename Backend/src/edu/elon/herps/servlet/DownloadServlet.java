@@ -58,7 +58,7 @@ public class DownloadServlet extends HttpServlet {
 		String category = req.getParameter("category");
 		String view = req.getParameter("view");
 		String pictureAction = req.getParameter("pictures");
-		
+
 		if (category == null || view == null || pictureAction == null) {
 			return;
 		}
@@ -82,7 +82,7 @@ public class DownloadServlet extends HttpServlet {
 			}
 		});
 
-		q = new Query("Aquatic Turtle");
+		q = new Query(category);
 		q.addFilter("order", FilterOperator.NOT_EQUAL, "true");
 		Iterable<Entity> results = datastore.prepare(q).asIterable();
 
@@ -102,10 +102,10 @@ public class DownloadServlet extends HttpServlet {
 
 		String picture = req.getRequestURL().toString();
 		picture = picture.substring(0, picture.lastIndexOf("/")) + "/picture?id=";
-		
+
 		OutputStream output;
 		ZipOutputStream zos = null;
-		
+
 		if (embedPictures) {
 			zos = new ZipOutputStream(resp.getOutputStream());
 			ZipEntry entry = new ZipEntry("data.xls");
@@ -114,9 +114,9 @@ public class DownloadServlet extends HttpServlet {
 		} else {
 			output = resp.getOutputStream();
 		}
-		
+
 		LinkedList<Long> pictures = new LinkedList<Long>();
-		
+
 		WritableWorkbook wb = Workbook.createWorkbook(output);
 		WritableSheet sheet = wb.createSheet("Page 1", 0);
 
@@ -135,32 +135,31 @@ public class DownloadServlet extends HttpServlet {
 				c = 0;
 				for (String header : headers) {
 					Object value = data.getProperty(header);
-					if (value != null) {
-						WritableCell cell = null;
-						if (value instanceof Key) {
-							long id = ((Key)value).getId();
-							if (embedPictures) {
-								sheet.addHyperlink(new WritableHyperlink(c, r, 
-										new File("pictures/" + id + ".jpg")));
-								pictures.add(id);
-								
-							} else {
-								sheet.addHyperlink(new WritableHyperlink(c, r, 
-										new URL(picture + id)));								
-							}
-						} else if (value instanceof Long) {
-							cell = new Number(c, r, ((Long)value).longValue());
-						} else if (value instanceof Integer) {
-							cell = new Number(c, r, ((Integer)value).intValue());
-						} else if (value instanceof Double) {
-							cell = new Number(c, r, (Double)value);
-						} else if (value instanceof Date) {
-							cell = new jxl.write.DateTime(c, r, (Date)value);
+					WritableCell cell = null;
+					if (value != null && value instanceof Key) {
+						long id = ((Key)value).getId();
+						if (embedPictures) {
+							sheet.addHyperlink(new WritableHyperlink(c, r, 
+									new File("pictures/" + id + ".jpg")));
+							pictures.add(id);
+
 						} else {
-							cell = new Label(c, r, toString(value));
+							sheet.addHyperlink(new WritableHyperlink(c, r, 
+									new URL(picture + id)));								
 						}
-						if (cell != null) sheet.addCell(cell);
+					} else if (value instanceof Long) {
+						cell = new Number(c, r, ((Long)value).longValue());
+					} else if (value instanceof Integer) {
+						cell = new Number(c, r, ((Integer)value).intValue());
+					} else if (value instanceof Double) {
+						cell = new Number(c, r, (Double)value);
+					} else if (value instanceof Date) {
+						cell = new jxl.write.DateTime(c, r, (Date)value);
+					} else {
+						cell = new Label(c, r, toString(value));
 					}
+					if (cell != null) sheet.addCell(cell);
+
 					c++;
 				}
 				r++;
@@ -171,14 +170,14 @@ public class DownloadServlet extends HttpServlet {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		if (embedPictures) {
 			final ZipOutputStream fzos = zos;
-			
+
 			for (Long id : pictures) {
 				ZipEntry entry = new ZipEntry("pictures/" + id + ".jpg");
 				zos.putNextEntry(entry);
-				
+
 				RequestDispatcher d = req.getRequestDispatcher("picture?id=" + id);
 				HttpServletResponseWrapper wrapper = new HttpServletResponseWrapper(resp) {
 					@Override
@@ -188,7 +187,7 @@ public class DownloadServlet extends HttpServlet {
 							public void write(int b) throws IOException {
 								fzos.write(b);
 							}
-							
+
 							@Override
 							public void write(byte[] b, int off, int len) 
 							throws IOException {
@@ -214,7 +213,9 @@ public class DownloadServlet extends HttpServlet {
 		resp.setContentType("text/html");
 		PrintWriter writer = resp.getWriter();
 
-		writer.println("<!DOCTYPE html><html><body><table width='400%'>");
+		writer.println("<!DOCTYPE html><html>" +
+				"<head><link rel='stylesheet' type='text/css' href='css/table.css' />" +
+		"</head><body><table width='400%'>");
 
 		writer.print("<tr>");
 		for (String header : headers) {
@@ -226,16 +227,14 @@ public class DownloadServlet extends HttpServlet {
 			writer.print("<tr>");
 			for (String header : headers) {
 				Object value = data.getProperty(header);
-				if (value != null) {
-					if (value instanceof Key) {
-						String link = "picture?id=" + ((Key)value).getId();
-						String content = String.format(embedPictures ? 
-								"<img src='%s' width='150'/>" : "%s", link);
-						writer.printf("<td><a href='%s'>%s</a></td>",
-								link, content);
-					} else {
-						writer.print("<td>" + toString(value) + "</td>");
-					}
+				if (value != null && value instanceof Key) {
+					String link = "picture?id=" + ((Key)value).getId();
+					String content = String.format(embedPictures ? 
+							"<img src='%s' width='150'/>" : "%s", link);
+					writer.printf("<td><a href='%s'>%s</a></td>",
+							link, content);
+				} else {
+					writer.print("<td>" + toString(value) + "</td>");
 				}
 			}
 			writer.println("</tr>");
