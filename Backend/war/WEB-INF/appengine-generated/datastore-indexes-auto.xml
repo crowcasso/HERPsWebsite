@@ -1,4 +1,23 @@
-<!-- Indices written at Tue, 5 Jun 2012 16:50:19 UTC -->
+<!-- Indices written at Sun, 10 Jun 2012 15:56:51 EDT -->
 
-<datastore-indexes/>
+<datastore-indexes>
 
+    <!-- Used 2 times in query history -->
+    <datastore-index kind="Aquatic Turtle" ancestor="false" source="auto">
+        <property name="order" direction="asc"/>
+        <property name="Submit Time" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 4 times in query history -->
+    <datastore-index kind="Field Data" ancestor="false" source="auto">
+        <property name="order" direction="asc"/>
+        <property name="Submit Time" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 2 times in query history -->
+    <datastore-index kind="Vernal Pool" ancestor="false" source="auto">
+        <property name="order" direction="asc"/>
+        <property name="Submit Time" direction="asc"/>
+    </datastore-index>
+
+</datastore-indexes>

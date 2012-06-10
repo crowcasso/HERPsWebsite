@@ -38,8 +38,6 @@ public class UploadServlet extends HttpServlet {
 	@Override
 	public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		ServletFileUpload upload = new ServletFileUpload();
-		System.out.println("!");
-		
 		
 		try {
 			FileItemIterator iterator = upload.getItemIterator(req);
@@ -66,7 +64,6 @@ public class UploadServlet extends HttpServlet {
 						baos.write(buffer, 0, read);
 					}
 					byte[] bytes = baos.toByteArray();
-					System.out.println(bytes.length);
 					
 					Entity entity = new Entity("Picture");
 					Blob blob = new Blob(bytes);
@@ -77,7 +74,7 @@ public class UploadServlet extends HttpServlet {
 				}
 				
 				String category = toUpload.get(0).value.toString();
-				System.out.println(category);
+				System.out.println("Uploading " + category + "...");
 				
 				Query q = new Query(category);
 				FetchOptions fo = FetchOptions.Builder.withLimit(1);
@@ -109,8 +106,6 @@ public class UploadServlet extends HttpServlet {
 				entity.setProperty("order", "false");
 				
 				datastore.put(entity);
-				
-				System.out.println(entity.getKey().getId());
 				
 				resp.getWriter().println("true");
 			}

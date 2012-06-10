@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -12,6 +15,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -25,6 +29,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
 import jxl.Workbook;
+import jxl.format.Colour;
+import jxl.write.DateFormat;
+import jxl.write.DateFormats;
+import jxl.write.DateTime;
 import jxl.write.Label;
 import jxl.write.Number;
 import jxl.write.WritableCell;
@@ -39,6 +47,7 @@ import jxl.write.WritableWorkbook;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.FilterOperator;
@@ -65,11 +74,13 @@ public class DownloadServlet extends HttpServlet {
 
 		Query q = new Query(category);
 		q.addFilter("order", FilterOperator.EQUAL, "true");
-		Entity order = datastore.prepare(q).asSingleEntity();
-		if (order == null) {
+		FetchOptions one = FetchOptions.Builder.withLimit(1);
+		List<Entity> orders = datastore.prepare(q).asList(one);
+		if (orders.size() == 0) {
 			resp.getWriter().println("No data for " + category);
 			return;
-		}
+		} 
+		Entity order = orders.get(0);
 
 		final Map<String, Object> map = order.getProperties();
 		LinkedList<String> headers = new LinkedList<String>();
@@ -81,11 +92,15 @@ public class DownloadServlet extends HttpServlet {
 				return ((Long)map.get(o1)).compareTo((Long)map.get(o2));
 			}
 		});
-
+		
+		TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"));
+		
 		q = new Query(category);
 		q.addFilter("order", FilterOperator.NOT_EQUAL, "true");
+		q.addSort("order");
+		q.addSort("Submit Time");
 		Iterable<Entity> results = datastore.prepare(q).asIterable();
-
+		
 		boolean embed = pictureAction.equals("embed");
 		if (view.equals("web")) {
 			writeHTML(resp, headers, results, embed);
@@ -122,7 +137,7 @@ public class DownloadServlet extends HttpServlet {
 
 		try {
 			int c = 0;
-			WritableFont bold = new WritableFont(WritableFont.ARIAL, 10, WritableFont.BOLD);
+			WritableFont bold = new WritableFont(WritableFont.COURIER, 10, WritableFont.BOLD);
 			WritableCellFormat format = new WritableCellFormat(bold);
 			for (String header : headers) {
 				Label label = new Label(c++, 0, header);
@@ -130,10 +145,12 @@ public class DownloadServlet extends HttpServlet {
 				sheet.addCell(label);
 			}
 
+			WritableFont normal = new WritableFont(WritableFont.COURIER, 10, WritableFont.NO_BOLD);
 			int r = 1;
 			for (Entity data : results) {
 				c = 0;
 				for (String header : headers) {
+					format = new WritableCellFormat(normal);
 					Object value = data.getProperty(header);
 					WritableCell cell = null;
 					if (value != null && value instanceof Key) {
@@ -154,11 +171,19 @@ public class DownloadServlet extends HttpServlet {
 					} else if (value instanceof Double) {
 						cell = new Number(c, r, (Double)value);
 					} else if (value instanceof Date) {
-						cell = new jxl.write.DateTime(c, r, (Date)value);
+//						DateFormat customDateFormat = 
+//							new DateFormat("MMM dd, yyyy h:mm aa");
+//						format = new WritableCellFormat (customDateFormat);
+//						format.setFont(normal);
+//						cell = new DateTime(c, r, (Date)value); 
+						cell = new Label(c, r, toString(value));
 					} else {
 						cell = new Label(c, r, toString(value));
 					}
-					if (cell != null) sheet.addCell(cell);
+					if (cell != null) {
+						cell.setCellFormat(format);
+						sheet.addCell(cell);
+					}
 
 					c++;
 				}
@@ -215,14 +240,17 @@ public class DownloadServlet extends HttpServlet {
 
 		writer.println("<!DOCTYPE html><html>" +
 				"<head><link rel='stylesheet' type='text/css' href='css/table.css' />" +
-		"</head><body><table width='400%'>");
+		"</head><body>" +
+		//"<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js'></script>" +
+		//"<script type='text/javascript' src='table_floating_header.js'></script>" +
+		"<table class='tableWithFloatingHeader' width='400%'>");
 
-		writer.print("<tr>");
+		writer.print("<thead><tr>");
 		for (String header : headers) {
 			writer.print("<th>" + header + "</th>");
 		}
-		writer.println("</tr>");		
-
+		writer.println("</tr></thead>");		
+		
 		for (Entity data : results) {
 			writer.print("<tr>");
 			for (String header : headers) {
@@ -234,7 +262,7 @@ public class DownloadServlet extends HttpServlet {
 					writer.printf("<td><a href='%s'>%s</a></td>",
 							link, content);
 				} else {
-					writer.print("<td>" + toString(value) + "</td>");
+					writer.print("<td><pre>" + toString(value) + "</pre></td>");
 				}
 			}
 			writer.println("</tr>");
@@ -243,6 +271,11 @@ public class DownloadServlet extends HttpServlet {
 	}
 
 	private static String toString(Object o) {
+		if (o instanceof Date) {
+			SimpleDateFormat df = 
+				new SimpleDateFormat("MMM dd, yyyy h:mm aa");
+			return df.format((Date)o);
+		}
 		return o == null ? "" : o.toString();
 	}
 }

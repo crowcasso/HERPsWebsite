@@ -1,0 +1,39 @@
+<!-- Indices written at Sun, 10 Jun 2012 05:48:51 UTC -->
+
+<datastore-indexes autoGenerate="true">
+
+    <!-- Used 4 times in query history -->
+    <datastore-index kind="Vernal Pool" ancestor="false" source="auto">
+        <property name="order" direction="asc"/>
+        <property name="Submit Time" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 2 times in query history -->
+    <datastore-index kind="Snake" ancestor="false" source="auto">
+        <property name="order" direction="asc"/>
+        <property name="Submit Time" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 8 times in query history -->
+    <datastore-index kind="Aquatic Turtle" ancestor="false" source="auto">
+        <property name="order" direction="asc"/>
+        <property name="Submit Time" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 2 times in query history -->
+    <datastore-index kind="Box Turtle" ancestor="false" source="auto">
+        <property name="order" direction="asc"/>
+        <property name="Submit Time" direction="asc"/>
+    </datastore-index>
+    
+    <datastore-index kind="Field Data" ancestor="false" source="auto">
+        <property name="order" direction="asc"/>
+        <property name="Submit Time" direction="asc"/>
+    </datastore-index>
+
+	<datastore-index kind="Frog Call" ancestor="false" source="auto">
+        <property name="order" direction="asc"/>
+        <property name="Submit Time" direction="asc"/>
+    </datastore-index>
+
+</datastore-indexes>
