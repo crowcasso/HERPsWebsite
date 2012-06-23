@@ -50,6 +50,7 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.Text;
 import com.google.appengine.api.datastore.Query.FilterOperator;
 import com.google.appengine.api.urlfetch.HTTPResponse;
 
@@ -172,7 +173,7 @@ public class DownloadServlet extends HttpServlet {
 						cell = new Number(c, r, (Double)value);
 					} else if (value instanceof Date) {
 //						DateFormat customDateFormat = 
-//							new DateFormat("MMM dd, yyyy h:mm aa");
+//							new DateFormat("dd/MM/yyyy h:mm aa");
 //						format = new WritableCellFormat (customDateFormat);
 //						format.setFont(normal);
 //						cell = new DateTime(c, r, (Date)value); 
@@ -243,7 +244,7 @@ public class DownloadServlet extends HttpServlet {
 		"</head><body>" +
 		//"<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js'></script>" +
 		//"<script type='text/javascript' src='table_floating_header.js'></script>" +
-		"<table class='tableWithFloatingHeader' width='400%'>");
+		"<table class='tableWithFloatingHeader' width='5000px'>");
 
 		writer.print("<thead><tr>");
 		for (String header : headers) {
@@ -273,8 +274,11 @@ public class DownloadServlet extends HttpServlet {
 	private static String toString(Object o) {
 		if (o instanceof Date) {
 			SimpleDateFormat df = 
-				new SimpleDateFormat("MMM dd, yyyy h:mm aa");
+				new SimpleDateFormat("dd/MM/yyyy h:mm aa");
 			return df.format((Date)o);
+		}
+		if (o instanceof Text) {
+			return ((Text) o).getValue();
 		}
 		return o == null ? "" : o.toString();
 	}

@@ -27,6 +27,7 @@ import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.Text;
 
 import edu.elon.herps.NameValuePair;
 import edu.elon.herps.UploadData;
@@ -115,6 +116,13 @@ public class UploadServlet extends HttpServlet {
 	}
 	
 	private void setEntityProperty(Entity entity, String name, Object value) {
+
+		if (value instanceof String) {
+			if (((String)value).length() > 300) {
+				value = new Text((String)value);
+			}
+		}
+		
 		int index = 1;
 		String newName = name;
 		while (entity.getProperties().containsKey(newName)) {
