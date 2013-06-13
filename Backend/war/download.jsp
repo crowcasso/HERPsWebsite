@@ -12,7 +12,7 @@
 			<option>Box Turtle</option>
 			<option>Field Data</option>
 			<option>Frog Call</option>
-			<option>Vernal Pool</option>
+			<option>Ephemeral Pool</option>
 			<option>Snake</option>
 		</select>
 		<p>How would you like to view the data?<p>
