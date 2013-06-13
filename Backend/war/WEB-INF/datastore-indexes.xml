@@ -7,6 +7,11 @@
         <property name="order" direction="asc"/>
         <property name="Submit Time" direction="asc"/>
     </datastore-index>
+    
+    <datastore-index kind="Ephemeral Pool" ancestor="false" source="auto">
+        <property name="order" direction="asc"/>
+        <property name="Submit Time" direction="asc"/>
+    </datastore-index>
 
     <!-- Used 2 times in query history -->
     <datastore-index kind="Snake" ancestor="false" source="auto">
