@@ -40,5 +40,10 @@
         <property name="order" direction="asc"/>
         <property name="Submit Time" direction="asc"/>
     </datastore-index>
+    
+	<datastore-index kind="Lizard" ancestor="false" source="auto">
+        <property name="order" direction="asc"/>
+        <property name="Submit Time" direction="asc"/>
+    </datastore-index>
 
 </datastore-indexes>
