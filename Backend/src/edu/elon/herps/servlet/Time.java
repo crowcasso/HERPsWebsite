@@ -9,6 +9,6 @@ import javax.servlet.http.HttpServletResponse;
 public class Time extends HttpServlet {
 	public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		resp.getWriter().println(System.currentTimeMillis());
-		resp.getWriter().print("v1.3");
+		resp.getWriter().print("v1.4");
 	}
 }
